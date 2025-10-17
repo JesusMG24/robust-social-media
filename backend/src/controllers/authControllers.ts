@@ -15,7 +15,8 @@ const COOKIE_OPTIONS = {
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-insecure-secret";
 const JWT_EXPIRES_IN: SignOptions["expiresIn"] =
-  (process.env.JWT_EXPIRES_IN as any) || `${SESSION_TTL_HOURS}h`;
+  (process.env.JWT_EXPIRES_IN as SignOptions["expiresIn"]) ||
+  `${SESSION_TTL_HOURS}h`;
 
 export const Register = async (req: Request, res: Response) => {
   try {
@@ -25,7 +26,7 @@ export const Register = async (req: Request, res: Response) => {
     // Check if user already in database
     const exists = await pool.query(
       "SELECT id FROM users WHERE username = $1",
-      [username]
+      [username],
     );
     if (exists.rowCount) {
       return res.status(400).json({ error: "Username already exists!" });
@@ -38,10 +39,11 @@ export const Register = async (req: Request, res: Response) => {
     // Insert new user into database
     await pool.query(
       "INSERT INTO users (username, password_hash) VALUES ($1, $2)",
-      [username, passwordHash]
+      [username, passwordHash],
     );
     return res.status(201).json({ message: "Register done", username });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Register failed:", error);
     res.status(500).json({ error: "Register failed" });
   }
@@ -60,7 +62,7 @@ export const Login = async (req: Request, res: Response) => {
     // Find user
     const result = await pool.query(
       "SELECT id, username, password_hash FROM users WHERE username = $1",
-      [username]
+      [username],
     );
     const user = result.rows[0];
 
@@ -78,7 +80,7 @@ export const Login = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { sub: String(user.id), username: user.username },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN },
     );
 
     // httpOnly cookie with the JWT
@@ -90,6 +92,7 @@ export const Login = async (req: Request, res: Response) => {
     // Return safe user fields only
     res.json({ id: user.id, username: user.username });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Login failed:", error);
     res.status(500).json({ error: "Login failed" });
   }
@@ -98,6 +101,7 @@ export const Login = async (req: Request, res: Response) => {
 export const Logout = async (_req: Request, res: Response) => {
   try {
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Logout failed:", error);
   } finally {
     res.clearCookie(COOKIE_NAME, COOKIE_OPTIONS);

@@ -10,11 +10,10 @@ interface User {
   avatar_url: string;
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: User;
-    }
+// Replace global namespace augmentation with module augmentation
+declare module "express-serve-static-core" {
+  interface Request {
+    user?: User;
   }
 }
 
@@ -29,11 +28,12 @@ export async function auth(req: Request, _res: Response, next: NextFunction) {
     const userId = Number(payload.sub);
     const { rows } = await pool.query(
       "SELECT id, username, display_name, created_at, avatar_url FROM users WHERE id = $1",
-      [userId]
+      [userId],
     );
 
     if (rows[0]) req.user = rows[0];
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("auth middleware error:", error);
   }
   next();
