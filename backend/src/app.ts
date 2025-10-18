@@ -1,11 +1,20 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import postRoutes from "./routes/postRoutes";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import { auth } from "./middleware/auth";
 
 const app = express();
+
+app.use(
+  cors({
+    origin: process.env.URL || "http://localhost:4000",
+    credentials: true,
+  }),
+);
+
 app.use(cookieParser());
 app.use(express.json());
 
