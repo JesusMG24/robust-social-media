@@ -1,10 +1,14 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import path from "path";
+import dotenv from "dotenv";
 import postRoutes from "./routes/postRoutes";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import { auth } from "./middleware/auth";
+
+dotenv.config();
 
 const app = express();
 
@@ -34,6 +38,7 @@ app.get("/api/protected", auth, requireAuth, (req, res) => {
 });
 
 // Routes
+app.use("/static", express.static(path.join(__dirname, "static")));
 app.use("/api/posts", postRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
